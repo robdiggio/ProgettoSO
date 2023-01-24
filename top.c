@@ -4,10 +4,10 @@
 #include <dirent.h>
 #include <errno.h>
 #include <time.h>
-//#include <delay.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
+#include "Mem_and_Swap.h"
 
 int main() {
   //INFO GENERALI DI TOP (PRIMA PARTE)
@@ -25,7 +25,6 @@ int main() {
   }
 
   //lettura del file meminfo
-  char x[30];
   FILE *fd;
   fd=fopen("/proc/meminfo", "r");
   if(fd==NULL){
@@ -41,62 +40,27 @@ int main() {
     int used;
     int cache;
   } Mem;
-  char *mem_tot=(char *) malloc(sizeof(char));
-  char *mem_free=(char *) malloc(sizeof(char));
-  char *mem_disp=(char *) malloc(sizeof(char));
-  char *mem_cache=(char *) malloc(sizeof(char));
+  char x[30];
 
   //memoria totale
   fgets(x,30,fd);
-  int j=0;
-  for(int i=0;i<30;i++){
-    if(isdigit(x[i])) {
-      mem_tot[j]=x[i];
-      j++;
-    }
-  }
-  Mem.total=atoi(mem_tot);
-  j=0;
+  Mem.total=getMemOrSwap(x);
 
   //memoria libera
   fgets(x,30,fd);
-  for(int i=0;i<30;i++){
-    if(isdigit(x[i])) {
-      mem_free[j]=x[i];
-      j++;
-    }
-  }
-  Mem.free=atoi(mem_free);
-  j=0;
+  Mem.free=getMemOrSwap(x);
+
+  //memoria disponibile
+  fgets(x,30,fd);
+  Mem.disp=getMemOrSwap(x);
 
   //memoria usata
-  fgets(x,30,fd);
-  for(int i=0;i<30;i++){
-    if(isdigit(x[i])) {
-      mem_disp[j]=x[i];
-      j++;
-    }
-  }
-  Mem.disp=atoi(mem_disp);
   Mem.used=Mem.total-Mem.disp;
-  j=0;
-  //itoa(used,Mem.used,10);
 
   //memoria cache
   fgets(x,30,fd);
   fgets(x,30,fd);
-  for(int i=0;i<30;i++){
-    if(isdigit(x[i])) {
-      mem_cache[j]=x[i];
-      j++;
-    }
-  }
-  Mem.cache=atoi(mem_cache);
-  j=0;
-  free(mem_tot);
-  free(mem_free);
-  free(mem_disp);
-  free(mem_cache);
+  Mem.cache=getMemOrSwap(x);
 
   //Swap
   struct Swap{
@@ -104,37 +68,18 @@ int main() {
     int free;
     int used;
   } Swap;
-  char *swap_tot=(char *) malloc(sizeof(char));
-  char *swap_free=(char *) malloc(sizeof(char));
 
   //swap totale
   for(int i=0;i<10;i++)
     fgets(x,30,fd);
-  for(int i=0;i<30;i++){
-    if(isdigit(x[i])) {
-      swap_tot[j]=x[i];
-      j++;
-    }
-  }
-  Swap.total=atoi(swap_tot);
-  j=0;
+  Swap.total=getMemOrSwap(x);
 
   //swap libero
   fgets(x,30,fd);
-  for(int i=0;i<30;i++){
-    if(isdigit(x[i])) {
-      swap_free[j]=x[i];
-      j++;
-    }
-  }
-  Swap.free=atoi(swap_free);
-  j=0;
+  Swap.free=getMemOrSwap(x);
 
   //swap usato
   Swap.used=Swap.total-Swap.free;
-
-  free(swap_tot);
-  free(swap_free);
 
   //stampa a video delle prime informazioni
   
