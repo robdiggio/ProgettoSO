@@ -1,1 +1,0 @@
-int getMemOrSwap(char line[]);
