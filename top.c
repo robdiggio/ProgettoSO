@@ -7,28 +7,17 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
-#include "Mem_and_Swap.h"
+#include "top_info.h"
 
 int main() {
   //INFO GENERALI DI TOP (PRIMA PARTE)
   //system("uptime");
-  //directory proc
-  DIR *dr;
-  struct dirent *dir_p;
-
-  dr=opendir("/proc");
-  if(dr==NULL){
-    if(errno==EACCES) printf("permesso negato per la cartella /proc \n");
-    else if(errno==ENAMETOOLONG) printf("nome della cartella troppo lungo \n");
-    else printf("errore nell'apertura della directory proc");
-    exit(1);
-  }
 
   //lettura del file meminfo
   FILE *fd;
   fd=fopen("/proc/meminfo", "r");
   if(fd==NULL){
-    printf("il file non può essere aperto");
+    printf("errore nell'apertura del file");
     exit(1);
   }
 
@@ -43,6 +32,9 @@ int main() {
   char x[30];
 
   //memoria totale
+  //char tot[30],t[10];
+  //fscanf(fd, "%s %s", tot,t);
+  //printf("%s\n",t);
   fgets(x,30,fd);
   Mem.total=getMemOrSwap(x);
 
@@ -81,8 +73,46 @@ int main() {
   //swap usato
   Swap.used=Swap.total-Swap.free;
 
-  //stampa a video delle prime informazioni
-  
+  //lettura del file uptime
+  fclose(fd);
+  fd=fopen("/proc/uptime", "r");
+  if(fd==NULL){
+    printf("errore nell'apertura del file");
+    exit(1);
+  }
+  int uptime=0;
+  fscanf(fd, "%d", &uptime);
+  fclose(fd);
+
+  //directory proc
+  DIR *dr;
+  struct dirent *dir;
+
+  dr=opendir("/proc");
+  if(dr==NULL){
+    if(errno==EACCES) printf("permesso negato per la cartella /proc \n");
+    else if(errno==ENAMETOOLONG) printf("nome della cartella troppo lungo \n");
+    else printf("errore nell'apertura della directory proc");
+    exit(1);
+  }
+
+  /*
+  while(fscanf(fd,"%s",utime)!=EOF){
+    printf("%s\n",utime);
+  }
+  */
+
+  //stampa a video delle informazioni
+  /*
+  while((dir=readdir(dr))!=NULL){
+    char *pid=dir->d_name;
+    float cpu=getCpu(pid,uptime);
+    printf("%s\n",pid);
+
+  }
+  */
+  char *pid="1253";
+  getCpuUsage(pid,uptime);
   printf("top \n");
 
   printf("kB Mem :   ");
