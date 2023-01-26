@@ -96,12 +96,6 @@ int main() {
     exit(1);
   }
 
-  /*
-  while(fscanf(fd,"%s",utime)!=EOF){
-    printf("%s\n",utime);
-  }
-  */
-
   //stampa a video delle informazioni
   /*
   while((dir=readdir(dr))!=NULL){
@@ -111,8 +105,15 @@ int main() {
 
   }
   */
-  char *pid="1253";
-  getCpuUsage(pid,uptime);
+  char *pid="1";
+  struct CPU_PR_NI cpn;
+  struct COMMAND_S_VIRT_RES csvr;
+
+  cpn=getCPN(pid,uptime);
+  printf("i valori del CPN sono: \n%f\n%d\n%d\n",cpn.cpu_usage,cpn.priority,cpn.nice);
+  csvr=getCSVR(pid);
+  printf("i valori del CSVR sono: \n%s\n%s\n%d\n%d\n",csvr.name,csvr.state,csvr.VmSize,csvr.VmHWM);
+
   printf("top \n");
 
   printf("kB Mem :   ");
@@ -134,9 +135,6 @@ int main() {
   printf(" used,   ");
   printf("%d",Mem.disp);
   printf(" avail Mem \n");
-  
-  
-  fclose(fd);
 
   closedir(dr);
   /*
@@ -159,13 +157,6 @@ int main() {
 
   //lettura da file
   /*
-  char x;
-  FILE *fd;
-  fd=fopen("/proc/version", "r");
-  if(fd==NULL){
-    printf("errore");
-    exit(1);
-  }
   while(!feof(fd)){
     fscanf(fd, "%c\t", &x);
     printf("%c", x);
