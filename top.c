@@ -105,14 +105,16 @@ int main() {
 
   }
   */
-  char *pid="1";
+  char *pid="1267";
   struct CPU_PR_NI cpn;
-  struct COMMAND_S_VIRT_RES csvr;
+  struct COMMAND_S_VIRT_RES_USER csvr;
+  //printf("%ld\n",sysconf(_SC_PAGE_SIZE));
 
   cpn=getCPN(pid,uptime);
   printf("i valori del CPN sono: \n%f\n%d\n%d\n",cpn.cpu_usage,cpn.priority,cpn.nice);
-  csvr=getCSVR(pid);
-  printf("i valori del CSVR sono: \n%s\n%s\n%d\n%d\n",csvr.name,csvr.state,csvr.VmSize,csvr.VmHWM);
+  csvr=getCSVRU(pid);
+  printf("i valori del CSVR sono: \n%s\n%s\n%s\n%d\n%d\n",csvr.name,csvr.state,csvr.user,csvr.VmSize,csvr.VmHWM);
+  float m=100*(csvr.VmSize/Mem.total);
 
   printf("top \n");
 

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <pwd.h>
 #include "top_info.h"
 
 #define CLK_TCK   sysconf(_SC_CLK_TCK)
@@ -69,8 +70,8 @@ struct CPU_PR_NI getCPN(char *pid,int uptime){
     return cpn;
 }
 
-struct COMMAND_S_VIRT_RES getCSVR(char *pid){
-    struct COMMAND_S_VIRT_RES csvr;
+struct COMMAND_S_VIRT_RES_USER getCSVRU(char *pid){
+    struct COMMAND_S_VIRT_RES_USER csvr;
     char *path=getPath(pid,"/status");
     FILE *fd=fopen(path, "r");
     if(fd==NULL){
@@ -81,6 +82,8 @@ struct COMMAND_S_VIRT_RES getCSVR(char *pid){
     char *word=(char *) malloc(sizeof(char)*20);
     strcpy(csvr.name,"");
     strcpy(csvr.state,"");
+    strcpy(csvr.user,"");
+    struct passwd* user_pwuid;
     while(fscanf(fd,"%s",word)!=EOF){
         if(strcmp(word,"Name:")==0){
             fscanf(fd,"%s",word);
@@ -89,6 +92,11 @@ struct COMMAND_S_VIRT_RES getCSVR(char *pid){
         else if(strcmp(word,"State:")==0){
             fscanf(fd,"%s",word);
             strcat(csvr.state,word);
+        }
+        else if(strcmp(word,"Uid:")==0){
+            fscanf(fd,"%s",word);
+            user_pwuid=getpwuid(atoi(word));
+            strcat(csvr.user,user_pwuid->pw_name);
         }
         else if(strcmp(word,"VmSize:")==0){
             fscanf(fd,"%s",word);
