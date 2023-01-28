@@ -85,60 +85,67 @@ int main() {
   fclose(fd);
 
   //directory proc
-  DIR *dr;
-  struct dirent *dir;
+  DIR *dir;
+  struct dirent *dirent;
 
-  dr=opendir("/proc");
-  if(dr==NULL){
+  dir=opendir("/proc");
+  if(dir==NULL){
     if(errno==EACCES) printf("permesso negato per la cartella /proc \n");
     else if(errno==ENAMETOOLONG) printf("nome della cartella troppo lungo \n");
     else printf("errore nell'apertura della directory proc");
     exit(1);
   }
 
-  //stampa a video delle informazioni
-  /*
-  while((dir=readdir(dr))!=NULL){
-    char *pid=dir->d_name;
-    float cpu=getCpu(pid,uptime);
-    printf("%s\n",pid);
-
+  //acquisizione delle varie informazione sulla memoria e sui processi
+  while((dirent=readdir(dir))!=NULL && strcmp(dirent->d_name,"thread-self")!=0) {}
+  char *state;
+  int tot=0,tot_sleep=0,tot_running=0,tot_zombie=0,tot_stopped=0;
+  while((dirent=readdir(dir))!=NULL){
+    char *pid=dirent->d_name;
+    state=getState(pid);
+    if(strcmp(state,"S")==0) tot_sleep++;
+    else if(strcmp(state,"R")==0) tot_running++;
+    else if(strcmp(state,"Z")==0) tot_zombie++;
+    else if(strcmp(state,"T")==0) tot_stopped++;
+    tot++;
+    free(state);
   }
-  */
-  char *pid="1267";
+
+  //stampa a video delle informazioni generali
+  system("uptime");
+
+  printf("Task: %d total,  %d running,  %d sleeping,  %d stopped,  %d zombie\n",tot,tot_running,tot_sleep,tot_stopped,tot_zombie);
+
+  printf("kB Mem :   %d total,   %d free,   %d used,   %d buff/cache\n",Mem.total,Mem.free,Mem.used,Mem.cache);
+
+  printf("kB Swap:   %d total,   %d free,   %d used,   %d avail Mem\n\n",Swap.total,Swap.free,Swap.used,Mem.disp);
+
+  //stampa a video delle informazioni sui processi
+  rewinddir(dir);
+  while((dirent=readdir(dir))!=NULL && strcmp(dirent->d_name,"thread-self")!=0) {}
   struct CPU_PR_NI cpn;
-  struct COMMAND_S_VIRT_RES_USER csvr;
-  //printf("%ld\n",sysconf(_SC_PAGE_SIZE));
+  struct COMMAND_S_USER_VIRT_RES csuvr;
 
-  cpn=getCPN(pid,uptime);
-  printf("i valori del CPN sono: \n%f\n%d\n%d\n",cpn.cpu_usage,cpn.priority,cpn.nice);
-  csvr=getCSVRU(pid);
-  printf("i valori del CSVR sono: \n%s\n%s\n%s\n%d\n%d\n",csvr.name,csvr.state,csvr.user,csvr.VmSize,csvr.VmHWM);
-  float m=100*(csvr.VmSize/Mem.total);
+  //printf("\033[1;31m");
+  printf("\033[30m\033[47m");
+  printf("  PID    USER          PR      NI       VIRT      RES   S      CPU     MEM      COMMAND\n");
+  printf("\033[0m\033[K\n");
+  
+  while((dirent=readdir(dir))!=NULL){
+    char *pid=dirent->d_name;
+    cpn=getCPN(pid,uptime);
+    csuvr=getCSUVR(pid);
+    float mem=100*(csuvr.VmSize/Mem.total);
+    printf("  %s\t%s\t\t%d\t%d\t%d\t%d\t%s\t%.1f\t%.1f\t%s\n",pid,csuvr.user,cpn.priority,cpn.nice,csuvr.VmSize,csuvr.VmHWM,csuvr.state,cpn.cpu_usage,mem,csuvr.name);
+  }
 
-  printf("top \n");
 
-  printf("kB Mem :   ");
-  printf("%d",Mem.total);
-  printf(" total,   ");
-  printf("%d",Mem.free);
-  printf(" free,   ");
-  printf("%d",Mem.used);
-  printf(" used,   ");
-  printf("%d",Mem.cache);
-  printf(" buff/cache \n");
+  
+  //printf("i valori del CPN sono: \n%f\n%d\n%d\n",cpn.cpu_usage,cpn.priority,cpn.nice);
+  
+  //printf("i valori del CSVR sono: \n%s\n%s\n%s\n%d\n%d\n",csuvr.name,csuvr.state,csuvr.user,csuvr.VmSize,csuvr.VmHWM);
 
-  printf("kB Swap:   ");
-  printf("%d",Swap.total);
-  printf(" total,   ");
-  printf("%d",Swap.free);
-  printf(" free,   ");
-  printf("%d",Swap.used);
-  printf(" used,   ");
-  printf("%d",Mem.disp);
-  printf(" avail Mem \n");
-
-  closedir(dr);
+  closedir(dir);
   /*
   while((dir_p=readdir(dr))!=NULL)
     printf("%s\n", dir_p->d_name);

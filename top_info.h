@@ -3,7 +3,7 @@ struct CPU_PR_NI{
     int priority;
     int nice;
 };
-struct COMMAND_S_VIRT_RES_USER{
+struct COMMAND_S_USER_VIRT_RES{
     char name[20];
     char state[20];
     char user[20];
@@ -12,4 +12,5 @@ struct COMMAND_S_VIRT_RES_USER{
 };
 int getMemOrSwap(char line[]);
 struct CPU_PR_NI getCPN(char *pid,int uptime);
-struct COMMAND_S_VIRT_RES_USER getCSVRU(char *pid);
+struct COMMAND_S_USER_VIRT_RES getCSUVR(char *pid);
+char* getState(char *pid);

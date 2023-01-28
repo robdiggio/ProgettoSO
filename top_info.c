@@ -24,8 +24,7 @@ int getMemOrSwap(char line[]){
 
 char* getPath(char *pid, char *s){
     char *path;
-    if(strcmp(s,"/status")==0) path=(char *) malloc(sizeof(char)*strlen("proc")+strlen(pid)+strlen("/status"));
-    else if(strcmp(s,"/stat")==0) path=(char *) malloc(sizeof(char)*strlen("proc")+strlen(pid)+strlen("/stat"));
+    path=(char *) malloc(sizeof(char)*strlen("proc")+strlen(pid)+strlen(s));
     strcpy(path,"");
     strcat(path, "/proc/");
     strcat(path, pid);
@@ -44,7 +43,7 @@ struct CPU_PR_NI getCPN(char *pid,int uptime){
 
     float utime,stime,cutime,cstime,starttime;
     int i=1,priority,nice;
-    char *word=(char *) malloc(sizeof(char));
+    char *word=(char *) malloc(sizeof(char)*30);
     while(fscanf(fd,"%s",word)!=EOF){
         if(i==14) utime=atoi(word);
         else if(i==15) stime=atoi(word);
@@ -70,8 +69,8 @@ struct CPU_PR_NI getCPN(char *pid,int uptime){
     return cpn;
 }
 
-struct COMMAND_S_VIRT_RES_USER getCSVRU(char *pid){
-    struct COMMAND_S_VIRT_RES_USER csvr;
+struct COMMAND_S_USER_VIRT_RES getCSUVR(char *pid){
+    struct COMMAND_S_USER_VIRT_RES csvr;
     char *path=getPath(pid,"/status");
     FILE *fd=fopen(path, "r");
     if(fd==NULL){
@@ -79,24 +78,21 @@ struct COMMAND_S_VIRT_RES_USER getCSVRU(char *pid){
         exit(1);
     }
 
-    char *word=(char *) malloc(sizeof(char)*20);
-    strcpy(csvr.name,"");
-    strcpy(csvr.state,"");
-    strcpy(csvr.user,"");
+    char *word=(char *) malloc(sizeof(char)*30);
     struct passwd* user_pwuid;
     while(fscanf(fd,"%s",word)!=EOF){
         if(strcmp(word,"Name:")==0){
             fscanf(fd,"%s",word);
-            strcat(csvr.name,word);
+            strcpy(csvr.name,word);
         }
         else if(strcmp(word,"State:")==0){
             fscanf(fd,"%s",word);
-            strcat(csvr.state,word);
+            strcpy(csvr.state,word);
         }
         else if(strcmp(word,"Uid:")==0){
             fscanf(fd,"%s",word);
             user_pwuid=getpwuid(atoi(word));
-            strcat(csvr.user,user_pwuid->pw_name);
+            strcpy(csvr.user,user_pwuid->pw_name);
         }
         else if(strcmp(word,"VmSize:")==0){
             fscanf(fd,"%s",word);
@@ -107,6 +103,12 @@ struct COMMAND_S_VIRT_RES_USER getCSVRU(char *pid){
             csvr.VmHWM=atoi(word);
             break;
         }
+        else if(strcmp(word,"Threads:")==0){
+            csvr.VmSize=0;
+            csvr.VmHWM=0;
+            break;
+        }
+        strcpy(word,"");
     }
 
     free(word);
@@ -115,4 +117,22 @@ struct COMMAND_S_VIRT_RES_USER getCSVRU(char *pid){
     fclose(fd);
 
     return csvr;
+}
+
+char* getState(char *pid){
+    char *path=getPath(pid,"/stat");
+    FILE *fd=fopen(path, "r");
+    if(fd==NULL){
+        printf("errore nell'apertura del file /proc/%s/stat",pid);
+        exit(1);
+    }
+
+    char *word=(char *) malloc(sizeof(char)*30);
+    fscanf(fd,"%s",word);
+    fscanf(fd,"%s",word);
+    fscanf(fd,"%s",word);
+
+    fclose(fd);
+
+    return word;
 }
