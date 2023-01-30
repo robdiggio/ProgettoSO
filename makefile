@@ -3,9 +3,11 @@ CCOPTS=--std=gnu99 -Wall
 AR=ar
 
 OBJS=top.o\
-	top_info.o
+	top_info.o\
+	top_signals.o
 	 
-HEADERS=top_info.h
+HEADERS=top_info.h\
+	top_signals.h
 
 LIBS=libtop.a
 

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <ucontext.h>
 #include "top_info.h"
+#include "top_signals.h"
 
 int main(){
   ucontext_t main_context;
@@ -86,12 +87,14 @@ int main(){
     float mem = 100 * (csuvr.VmSize / ms.MemTotal);
     printf("  %s\t%s\t\t%d\t%d\t%d\t%d\t%s\t%.1f\t%.1f\t%s\n", pid, csuvr.user, cpn.priority, cpn.nice, csuvr.VmSize, csuvr.VmHWM, csuvr.state, cpn.cpu_usage, mem, csuvr.name);
   }
-  printf("\n");
 
   while (1){
     char *com = (char *)malloc(sizeof(char) * 10);
-    printf("inserisci il comando che vuoi eseguire:   ");
+    printf("\033[0;34m");
+    printf("\n  inserisci il comando che vuoi eseguire:   ");
+    printf("\033[0m");
     scanf("%s", com);
+    printf("\n");
     if(strcmp(com,"q")==0){
       free(com);
       break;
@@ -100,30 +103,49 @@ int main(){
       help();
     }
     else if(strcmp(com,"t")==0){
-      printf("inserisci il PID del processo\n");
+      printf("\033[0;31m");
+      printf("  inserisci il PID del processo:   ");
+      printf("\033[0m");
       scanf("%s", pid);
+      printf("\033[0;31m");
       terminate(pid);
+      printf("\033[0m");
     }
     else if(strcmp(com,"k")==0){
-      printf("inserisci il PID del processo\n");
+      printf("\033[0;31m");
+      printf("  inserisci il PID del processo:   ");
+      printf("\033[0m");
       scanf("%s", pid);
+      printf("\033[0;31m");
       kill_proc(pid);
+      printf("\033[0m");
     }
     else if(strcmp(com,"r")==0){
-      printf("inserisci il PID del processo\n");
+      printf("\033[0;31m");
+      printf("  inserisci il PID del processo:   ");
+      printf("\033[0m");
       scanf("%s", pid);
+      printf("\033[0;31m");
       resume(pid);
+      printf("\033[0m");
     }
     else if(strcmp(com,"s")==0){
-      printf("inserisci il PID del processo\n");
+      printf("\033[0;31m");
+      printf("  inserisci il PID del processo:   ");
+      printf("\033[0m");
       scanf("%s", pid);
+      printf("\033[0;31m");
       suspend(pid);
+      printf("\033[0m");
     }
     else if(strcmp(com,"u")==0){
       setcontext(&main_context);
     }
-    else
-      printf("comando sconosciuto, esegui il comando 'h' per la lista dei comandi\n");
+    else{
+      printf("\033[0;31m");
+      printf("  comando sconosciuto, esegui il comando 'h' per la lista dei comandi\n");
+      printf("\033[0m");
+    }
     free(com);
   }
 
