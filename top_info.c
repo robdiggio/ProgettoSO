@@ -4,22 +4,54 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <signal.h>
+#include <errno.h>
 #include "top_info.h"
 
 #define CLK_TCK   sysconf(_SC_CLK_TCK)
 
-int getMemOrSwap(char line[]){
-    char *mem=(char *) malloc(sizeof(char)*30);
-    int j=0;
-    for(int i=0;i<30;i++){
-        if(isdigit(line[i])) {
-        mem[j]=line[i];
-        j++;
+struct Mem_Swap getMemAndSwap(){
+    struct Mem_Swap ms;
+    FILE *fd=fopen("/proc/meminfo", "r");
+    if(fd==NULL){
+        printf("errore nell'apertura del file /proc/meminfo");
+        exit(1);
+    }
+    char *word=(char *) malloc(sizeof(char)*30);
+    while(fscanf(fd,"%s",word)!=EOF){
+        if(strcmp(word,"MemTotal:")==0){
+            fscanf(fd,"%s",word);
+            ms.MemTotal=atoi(word);
+        }
+        else if(strcmp(word,"MemFree:")==0){
+            fscanf(fd,"%s",word);
+            ms.MemFree=atoi(word);
+        }
+        else if(strcmp(word,"MemAvailable:")==0){
+            fscanf(fd,"%s",word);
+            ms.MemDisp=atoi(word);
+        }
+        else if(strcmp(word,"Cached:")==0){
+            fscanf(fd,"%s",word);
+            ms.MemCache=atoi(word);
+        }
+        else if(strcmp(word,"SwapTotal:")==0){
+            fscanf(fd,"%s",word);
+            ms.SwapTotal=atoi(word);
+        }
+        else if(strcmp(word,"SwapFree:")==0){
+            fscanf(fd,"%s",word);
+            ms.SwapFree=atoi(word);
+            break;
         }
     }
-    int x=atoi(mem);
-    free(mem);
-    return x;
+    ms.MemUsed=ms.MemTotal-ms.MemDisp;
+    ms.SwapUsed=ms.SwapTotal-ms.SwapFree;
+    
+    free(word);
+    fclose(fd);
+
+    return ms;
 }
 
 char* getPath(char *pid, char *s){
@@ -135,4 +167,54 @@ char* getState(char *pid){
     fclose(fd);
 
     return word;
+}
+
+void help(){
+    printf("I comandi che puoi eseguire all'interno del programma sono:\n\n");
+    printf("s:    sospende il processo\n");
+    printf("r:    riprende il processo sospeso\n");
+    printf("t:    termina il processo\n");
+    printf("k:    esegue la kill del processo\n");
+    printf("u:    ricarica il programma\n");
+    printf("q:    esce dal programma\n");
+}
+
+void terminate(char *pid){
+    int p=atoi(pid);
+    int res=kill(p,SIGTERM);
+    if(res==-1){
+        if (errno==EPERM) printf("Non hai i permessi necessari per terminare il processo con PID %d\n",p);
+        else if (errno == ESRCH) printf("Il processo con PID %d non esiste\n",p);
+    }
+    else printf("il processo con PID %d è terminato con successo\n",p);
+}
+
+void kill_proc(char *pid){
+    int p=atoi(pid);
+    int res=kill(p,SIGKILL);
+    if(res==-1){
+        if (errno==EPERM) printf("Non hai i permessi necessari per eseguire la kill del processo con PID %d\n",p);
+        else if (errno == ESRCH) printf("Il processo con PID %d non esiste\n",p);
+    }
+    else printf("il processo con PID %d è terminato con successo\n",p);
+}
+
+void resume(char *pid){
+    int p=atoi(pid);
+    int res=kill(p,SIGCONT);
+    if(res==-1){
+        if (errno==EPERM) printf("Non hai i permessi necessari per riprendere il processo con PID %d\n",p);
+        else if (errno == ESRCH) printf("Il processo con PID %d non esiste\n",p);
+    }
+    else printf("il processo con PID %d è ripartito con successo\n",p);
+}
+
+void suspend(char *pid){
+    int p=atoi(pid);
+    int res=kill(p,SIGSTOP);
+    if(res==-1){
+        if (errno==EPERM) printf("Non hai i permessi necessari per sospendere il processo con PID %d\n",p);
+        else if (errno == ESRCH) printf("Il processo con PID %d non esiste\n",p);
+    }
+    else printf("il processo con PID %d è stato sospeso con successo\n",p);
 }
