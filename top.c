@@ -33,26 +33,18 @@ int main(){
   struct dirent *dirent;
 
   dir = opendir("/proc");
-  if (dir == NULL)
-  {
-    if (errno == EACCES)
-      printf("permesso negato per la cartella /proc \n");
-    else if (errno == ENAMETOOLONG)
-      printf("nome della cartella troppo lungo \n");
-    else
-      printf("errore nell'apertura della directory proc");
+  if (dir == NULL){
+    if (errno == EACCES) printf("permesso negato per la cartella /proc \n");
+    else printf("errore nell'apertura della cartella proc");
     exit(1);
   }
 
   // acquisizione delle varie informazione sulla memoria e sui processi
-  while ((dirent = readdir(dir)) != NULL && strcmp(dirent->d_name, "thread-self") != 0)
-  {
-  }
+  while ((dirent = readdir(dir)) != NULL && strcmp(dirent->d_name, "thread-self") != 0){}
   char *state;
   char *pid;
   int tot = 0, tot_sleep = 0, tot_running = 0, tot_zombie = 0, tot_stopped = 0;
-  while ((dirent = readdir(dir)) != NULL)
-  {
+  while ((dirent = readdir(dir)) != NULL){
     pid = dirent->d_name;
     state = getState(pid);
     if (strcmp(state, "S") == 0)
@@ -78,9 +70,7 @@ int main(){
 
   // stampa a video delle informazioni sui processi
   rewinddir(dir);
-  while ((dirent = readdir(dir)) != NULL && strcmp(dirent->d_name, "thread-self") != 0)
-  {
-  }
+  while ((dirent = readdir(dir)) != NULL && strcmp(dirent->d_name, "thread-self") != 0){}
   struct CPU_PR_NI cpn;
   struct COMMAND_S_USER_VIRT_RES csuvr;
 
@@ -89,8 +79,7 @@ int main(){
   printf("  PID    USER          PR      NI       VIRT      RES   S      CPU     MEM      COMMAND  \n");
   printf("\033[0m\033[K\n");
 
-  while ((dirent = readdir(dir)) != NULL)
-  {
+  while ((dirent = readdir(dir)) != NULL){
     pid = dirent->d_name;
     cpn = getCPN(pid, uptime);
     csuvr = getCSUVR(pid);
@@ -99,12 +88,7 @@ int main(){
   }
   printf("\n");
 
-  // printf("i valori del CPN sono: \n%f\n%d\n%d\n",cpn.cpu_usage,cpn.priority,cpn.nice);
-
-  // printf("i valori del CSVR sono: \n%s\n%s\n%s\n%d\n%d\n",csuvr.name,csuvr.state,csuvr.user,csuvr.VmSize,csuvr.VmHWM);
-
-  while (1)
-  {
+  while (1){
     char *com = (char *)malloc(sizeof(char) * 10);
     printf("inserisci il comando che vuoi eseguire:   ");
     scanf("%s", com);
