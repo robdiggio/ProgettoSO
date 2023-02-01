@@ -13,12 +13,13 @@
 int main(){
   ucontext_t main_context;
   getcontext(&main_context);
-  // info sulla RAM e sullo Swap
+
+  //info sulla RAM e sullo Swap
   struct Mem_Swap ms;
 
   ms = getMemAndSwap();
 
-  // lettura del file uptime
+  //lettura del file uptime
   FILE *fd = fopen("/proc/uptime", "r");
   if (fd == NULL)
   {
@@ -29,7 +30,7 @@ int main(){
   fscanf(fd,"%d",&uptime);
   fclose(fd);
 
-  // directory proc
+  //directory proc
   DIR *dir;
   struct dirent *dirent;
 
@@ -40,7 +41,7 @@ int main(){
     exit(1);
   }
 
-  // acquisizione delle varie informazione sulla memoria e sui processi
+  //acquisizione delle varie informazione sulla memoria e sui processi
   while ((dirent = readdir(dir)) != NULL && strcmp(dirent->d_name, "thread-self") != 0){}
   char *state;
   char *pid;
@@ -60,7 +61,7 @@ int main(){
     free(state);
   }
 
-  // stampa a video delle informazioni generali
+  //stampa a video delle informazioni generali
   system("uptime");
 
   printf(" Task: %d total,  %d running,  %d sleeping,  %d stopped,  %d zombie\n", tot, tot_running, tot_sleep, tot_stopped, tot_zombie);
@@ -69,13 +70,12 @@ int main(){
 
   printf(" kB Swap:   %d total,   %d free,   %d used,   %d avail Mem\n\n", ms.SwapTotal, ms.SwapFree, ms.SwapUsed, ms.MemDisp);
 
-  // stampa a video delle informazioni sui processi
+  //stampa a video delle informazioni sui processi
   rewinddir(dir);
   while ((dirent = readdir(dir)) != NULL && strcmp(dirent->d_name, "thread-self") != 0){}
   struct CPU_PR_NI cpn;
   struct COMMAND_S_USER_VIRT_RES csuvr;
 
-  // printf("\033[1;31m");
   printf("\033[30m\033[47m");
   printf("  PID    USER          PR      NI       VIRT      RES   S      CPU     MEM      COMMAND  \n");
   printf("\033[0m\033[K\n");
@@ -88,6 +88,7 @@ int main(){
     printf("  %s\t%s\t\t%d\t%d\t%d\t%d\t%s\t%.1f\t%.1f\t%s\n", pid, csuvr.user, cpn.priority, cpn.nice, csuvr.VmSize, csuvr.VmHWM, csuvr.state, cpn.cpu_usage, mem, csuvr.name);
   }
 
+  //gestione dei segnali
   while (1){
     char *com = (char *)malloc(sizeof(char) * 10);
     printf("\033[0;34m");

@@ -138,7 +138,6 @@ struct COMMAND_S_USER_VIRT_RES getCSUVR(char *pid){
             csvr.VmHWM=0;
             break;
         }
-        //strcpy(word,"");
     }
 
     free(word);
