@@ -22,11 +22,11 @@ int main(){
   FILE *fd = fopen("/proc/uptime", "r");
   if (fd == NULL)
   {
-    printf("errore nell'apertura del file");
+    printf("errore nell'apertura del file /proc/uptime");
     exit(1);
   }
   int uptime = 0;
-  fscanf(fd, "%d", &uptime);
+  fscanf(fd,"%d",&uptime);
   fclose(fd);
 
   // directory proc
@@ -148,7 +148,7 @@ int main(){
     }
     free(com);
   }
-
+ 
   closedir(dir);
 
   return 0;

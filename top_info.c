@@ -12,10 +12,10 @@ struct Mem_Swap getMemAndSwap(){
     struct Mem_Swap ms;
     FILE *fd=fopen("/proc/meminfo", "r");
     if(fd==NULL){
-        printf("errore nell'apertura del file /proc/meminfo");
+        printf("errore nell'apertura del file /proc/meminfo\n");
         exit(1);
     }
-    char *word=(char *) malloc(sizeof(char)*30);
+    char *word=(char *) malloc(sizeof(char)*20);
     while(fscanf(fd,"%s",word)!=EOF){
         if(strcmp(word,"MemTotal:")==0){
             fscanf(fd,"%s",word);
@@ -54,7 +54,7 @@ struct Mem_Swap getMemAndSwap(){
 
 char* getPath(char *pid, char *s){
     char *path;
-    path=(char *) malloc(sizeof(char)*strlen("proc")+strlen(pid)+strlen(s));
+    path=(char *) malloc(sizeof(char)*strlen("/proc")+strlen(pid)+strlen(s)+2);
     strcpy(path,"");
     strcat(path, "/proc/");
     strcat(path, pid);
@@ -67,13 +67,13 @@ struct CPU_PR_NI getCPN(char *pid,int uptime){
     char *path=getPath(pid,"/stat");
     FILE *fd=fopen(path, "r");
     if(fd==NULL){
-        printf("errore nell'apertura del file /proc/%s/stat",pid);
+        printf("errore nell'apertura del file /proc/%s/stat\n",pid);
         exit(1);
     }
 
     float utime,stime,cutime,cstime,starttime;
     int i=1,priority,nice;
-    char *word=(char *) malloc(sizeof(char)*30);
+    char *word=(char *) malloc(sizeof(char)*50);
     while(fscanf(fd,"%s",word)!=EOF){
         if(i==14) utime=atoi(word);
         else if(i==15) stime=atoi(word);
@@ -104,11 +104,11 @@ struct COMMAND_S_USER_VIRT_RES getCSUVR(char *pid){
     char *path=getPath(pid,"/status");
     FILE *fd=fopen(path, "r");
     if(fd==NULL){
-        printf("errore nell'apertura del file /proc/%s/status",pid);
+        printf("errore nell'apertura del file /proc/%s/status\n",pid);
         exit(1);
     }
 
-    char *word=(char *) malloc(sizeof(char)*30);
+    char *word=(char *) malloc(sizeof(char)*40);
     struct passwd* user_pwuid;
     while(fscanf(fd,"%s",word)!=EOF){
         if(strcmp(word,"Name:")==0){
@@ -138,7 +138,7 @@ struct COMMAND_S_USER_VIRT_RES getCSUVR(char *pid){
             csvr.VmHWM=0;
             break;
         }
-        strcpy(word,"");
+        //strcpy(word,"");
     }
 
     free(word);
@@ -153,14 +153,16 @@ char* getState(char *pid){
     char *path=getPath(pid,"/stat");
     FILE *fd=fopen(path, "r");
     if(fd==NULL){
-        printf("errore nell'apertura del file /proc/%s/stat",pid);
+        printf("errore nell'apertura del file /proc/%s/stat\n",pid);
         exit(1);
     }
 
-    char *word=(char *) malloc(sizeof(char)*30);
+    char *word=(char *) malloc(sizeof(char)*50);
     fscanf(fd,"%s",word);
     fscanf(fd,"%s",word);
     fscanf(fd,"%s",word);
+
+    free(path);
 
     fclose(fd);
 
